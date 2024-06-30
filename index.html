@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jogo</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #c7c7c7;
+            flex-direction: column;
+
+        }
+
+        .caixaGeral {
+            width: 500px;
+            height: 500px;
+            background-color: #4f84f5;
+            box-shadow: 0 0 20px #000;
+            border-radius: 10px;
+        }
+
+        table {
+            width: 100%;
+            height: 100%;
+            text-align: center;
+            font-size: 70px;
+            font-family: Impact, Haettenschweiler, 'Arial Narrow Bold', sans-serif;
+        }
+
+        .posicao0x0,
+        .posicao0x1,
+        .posicao0x2,
+        .posicao1x0,
+        .posicao1x1,
+        .posicao1x2,
+        .posicao2x0,
+        .posicao2x1,
+        .posicao2x2 {
+            width: 33.33%;
+            height: 33.33%;
+            border-radius: 10px;
+        }
+
+        .botao-estilizado {
+            background-color: #4f84f5;
+            color: #fff;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-top: 20px;
+        }
+
+        .divInfo {
+            width: 500px;
+            height: 50px;
+            background-color: #4f84f5;
+            box-shadow: 0 0 20px #000;
+            border-radius: 10px;
+            display: flex;
+            justify-content: space-between;
+            color: #fff;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        #info {
+            width: 50%;
+            margin: 10px;
+            font-size: 30px;
+        }
+
+        #info2 {
+            text-align: end;
+            width: 50%;
+            margin: 10px;
+            font-size: 30px;
+        }
+        p{
+                font-size: 30px;
+                text-align: center;
+            }
+        @media screen and (max-width: 600px){
+            .caixaGeral {
+                width: 500px;
+                height: 500px;
+            }
+            .divInfo {
+                width: 90%;
+            }
+            #info {
+                font-size: 15px;
+            }
+            #info2 {
+                font-size: 15px;
+            }
+            table {
+                font-size: 50px;
+            }
+
+            p{
+                font-size: 15px;
+                text-align: center;
+            }
+        }
+
+        @media screen and (max-width: 500px){
+            .caixaGeral {
+                width: 400px;
+                height: 400px;
+            }
+            .divInfo {
+                width: 90%;
+            }
+            #info {
+                font-size: 15px;
+            }
+            #info2 {
+                font-size: 15px;
+            }
+            table {
+                font-size: 50px;
+            }
+            p{
+                font-size: 15px;
+                text-align: center;
+            }
+        }
+
+        @media screen and (max-width: 400px){
+            .caixaGeral {
+                width: 300px;
+                height: 300px;
+            }
+            .divInfo {
+                width: 90%;
+            }
+            #info {
+                font-size: 15px;
+            }
+            #info2 {
+                font-size: 15px;
+            }
+            table {
+                font-size: 50px;
+            }
+            p{
+                font-size: 15px;
+                text-align: center;
+            }
+        }
+
+        @media screen and (max-width: 300px){
+            .caixaGeral {
+                width: 200px;
+                height: 200px;
+            }
+            .divInfo {
+                width: 90%;
+            }
+            #info {
+                font-size: 15px;
+            }
+            #info2 {
+                font-size: 15px;
+            }
+            table {
+                font-size: 50px;
+            }
+            p{
+                font-size: 15px;
+                text-align: center;
+            }
+        }
+
+    </style>
+</head>
+
+<body>
+    <h1>Jogo dos 8</h1>
+    <p>Resolvido automaticamente com um algoritmo guloso<br>usando distância de Manhattan</p>
+    <div class="divInfo">
+        <p id="info"></p>
+        <p id="info2"></p>
+    </div>
+    <div class="caixaGeral">
+        <table>
+            <tr>
+                <td class="posicao0x0"></td>
+                <td class="posicao0x1"></td>
+                <td class="posicao0x2"></td>
+            </tr>
+            <tr>
+                <td class="posicao1x0"></td>
+                <td class="posicao1x1"></td>
+                <td class="posicao1x2"></td>
+            </tr>
+            <tr>
+                <td class="posicao2x0"></td>
+                <td class="posicao2x1"></td>
+                <td class="posicao2x2"></td>
+            </tr>
+        </table>
+    </div>
+    <div id="meu-div">
+    </div>
+
+    <script>
+
+        function randomize(matrix, values) {
+            let valuesCopy = [...values];
+            shuffleArray(valuesCopy);
+            while (!isSolvable(valuesCopy)) {
+                shuffleArray(valuesCopy);
+            }
+
+            let index = 0;
+            for (let i = 0; i < matrix.length; i++) {
+                for (let j = 0; j < matrix[i].length; j++) {
+                    matrix[i][j] = valuesCopy[index++];
+                }
+            }
+
+            return matrix;
+        }
+
+        function isSolvable(puzzle) {
+            let inversions = countInversions(puzzle);
+            return inversions % 2 === 0;
+        }
+
+        function countInversions(arr) {
+            let inversions = 0;
+            for (let i = 0; i < arr.length; i++) {
+                for (let j = i + 1; j < arr.length; j++) {
+                    if (arr[i] && arr[j] && arr[i] > arr[j]) {
+                        inversions++;
+                    }
+                }
+            }
+            return inversions;
+        }
+
+        function findBlank(puzzle) {
+            for (let i = 0; i < puzzle.length; i++) {
+                for (let j = 0; j < puzzle[i].length; j++) {
+                    if (puzzle[i][j] === '') {
+                        return [i, j];
+                    }
+                }
+            }
+        }
+
+        function moveBlank(puzzle, direction) {
+            let [i, j] = findBlank(puzzle);
+            let newPuzzle = puzzle.map(row => [...row]);
+
+            if (direction === 'up' && i > 0) {
+                [newPuzzle[i][j], newPuzzle[i - 1][j]] = [newPuzzle[i - 1][j], newPuzzle[i][j]];
+            } else if (direction === 'down' && i < puzzle.length - 1) {
+                [newPuzzle[i][j], newPuzzle[i + 1][j]] = [newPuzzle[i + 1][j], newPuzzle[i][j]];
+            } else if (direction === 'left' && j > 0) {
+                [newPuzzle[i][j], newPuzzle[i][j - 1]] = [newPuzzle[i][j - 1], newPuzzle[i][j]];
+            } else if (direction === 'right' && j < puzzle[0].length - 1) {
+                [newPuzzle[i][j], newPuzzle[i][j + 1]] = [newPuzzle[i][j + 1], newPuzzle[i][j]];
+            }
+
+            return newPuzzle;
+        }
+
+        function manhattanDistance(matrix) {
+            let distance = 0;
+            for (let i = 0; i < matrix.length; i++) {
+                for (let j = 0; j < matrix[i].length; j++) {
+                    if (matrix[i][j] !== '') {
+                        let value = parseInt(matrix[i][j]) - 1;
+                        let rowDest = Math.floor(value / matrix.length);
+                        let colDest = value % matrix.length;
+                        distance += Math.abs(rowDest - i) + Math.abs(colDest - j);
+                    }
+                }
+            }
+            return distance;
+        }
+
+        function greedySearch(puzzle) {
+            let directions = ['up', 'down', 'left', 'right'];
+            let seen = new Set();
+            let heap = [[manhattanDistance(puzzle), puzzle.map(row => [...row]), []]];
+
+            while (heap.length > 0) {
+                let [cost, currentPuzzle, path] = heap.shift();
+                if (manhattanDistance(currentPuzzle) === 0) {
+                    return path;
+                }
+                seen.add(JSON.stringify(currentPuzzle));
+
+                for (let direction of directions) {
+                    let newPuzzle = moveBlank(currentPuzzle, direction);
+                    if (!seen.has(JSON.stringify(newPuzzle))) {
+                        heap.push([manhattanDistance(newPuzzle), newPuzzle.map(row => [...row]), [...path, direction]]);
+                        heap.sort((a, b) => a[0] - b[0]);
+                    }
+                }
+            }
+        }
+
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+        }
+
+
+        function imprimir(puzzle) {
+            document.getElementsByClassName("posicao0x0")[0].innerHTML = puzzle[0][0];
+            document.getElementsByClassName("posicao0x1")[0].innerHTML = puzzle[0][1];
+            document.getElementsByClassName("posicao0x2")[0].innerHTML = puzzle[0][2];
+            document.getElementsByClassName("posicao1x0")[0].innerHTML = puzzle[1][0];
+            document.getElementsByClassName("posicao1x1")[0].innerHTML = puzzle[1][1];
+            document.getElementsByClassName("posicao1x2")[0].innerHTML = puzzle[1][2];
+            document.getElementsByClassName("posicao2x0")[0].innerHTML = puzzle[2][0];
+            document.getElementsByClassName("posicao2x1")[0].innerHTML = puzzle[2][1];
+            document.getElementsByClassName("posicao2x2")[0].innerHTML = puzzle[2][2];
+
+            for (let i = 0; i < 3; i++) {
+                for (let j = 0; j < 3; j++) {
+                    if (puzzle[i][j] == '') {
+                        document.getElementsByClassName("posicao" + i + "x" + j)[0].style.backgroundColor = "#4f84f5";
+                        document.getElementsByClassName("posicao" + i + "x" + j)[0].style.border = "1px solid #4f84f5";
+                    } else {
+                        document.getElementsByClassName("posicao" + i + "x" + j)[0].style.backgroundColor = "#36d693";
+                        document.getElementsByClassName("posicao" + i + "x" + j)[0].style.border = "1px solid #000";
+
+                    }
+                }
+            }
+        }
+
+        async function solvePuzzle() {
+            let matrix = [['', '', ''], ['', '', ''], ['', '', '']];
+            let values = ['', 1, 2, 3, 4, 5, 6, 7, 8];
+            randomize(matrix, values);
+            const solution = greedySearch(matrix);
+            console.log("Solution found:");
+            console.log(solution);
+            imprimir(matrix);
+
+            let steps = 0;
+            for (let move of solution) {
+                matrix = moveBlank(matrix, move);
+                await new Promise(resolve => {
+                    setTimeout(() => {
+                        steps++;
+                        console.log(`Step => ${steps}`);
+                        console.log(`Move: ${move}`);
+                        imprimir(matrix);
+                        resolve();
+                        document.getElementById('info').textContent = `Etapa: ${steps}`;
+                        document.getElementById('info2').textContent = `Movimento: ${move}`;
+                    }, 1000);
+                });
+            }
+            if (steps === solution.length) {
+                const meuDiv = document.getElementById('meu-div');
+
+                if (!meuDiv.querySelector('.botao-estilizado')) {
+                    const botao = document.createElement('button');
+                    botao.textContent = 'Gerar novo puzzle';
+                    botao.classList.add('botao-estilizado');
+                    botao.addEventListener('click', function () {
+                        solvePuzzle();
+                        meuDiv.removeChild(botao);
+                    });
+                    meuDiv.appendChild(botao);
+                }
+            }
+
+        }
+
+        solvePuzzle();
+
+
+    </script>
+</body>
+
+</html>
